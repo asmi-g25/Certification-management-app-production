@@ -50,12 +50,15 @@ def to_sast(utc_dt):
     """Template function to convert UTC to SAST"""
     return utc_to_sast(utc_dt)
 
-# Configuration - Updated with new SMTP settings
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'secret-key-change-this-in-production'
+# =============================================================================
+# Configuration - Production Ready
+# =============================================================================
 
-# Supabase PostgreSQL Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres.xwxeyzwmbypzzlmgfkcq:ash1951@aws-0-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require'
+# Secret key (must always come from environment in production)
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 
+# Database (use DATABASE_URL env var, e.g. set in Render)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
@@ -66,19 +69,22 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'sslmode': 'require'
     }
 }
-app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# Updated Email configuration with SMTP credentials
-app.config['MAIL_SERVER'] = 'mail.lis-demos.co.za'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'techassess@lis-demos.co.za'
-app.config['MAIL_PASSWORD'] = 'Test@12345#TTf'
-app.config['MAIL_DEFAULT_SENDER'] = 'techassess@lis-demos.co.za'
+# Uploads
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
+
+# Email configuration
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'localhost')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.environ['MAIL_USERNAME']
+app.config['MAIL_PASSWORD'] = os.environ['MAIL_PASSWORD']
+app.config['MAIL_DEFAULT_SENDER'] = os.environ['MAIL_DEFAULT_SENDER']
 
 # Certificate settings
-app.config['CERTIFICATE_VALIDITY_YEARS'] = 3
+app.config['CERTIFICATE_VALIDITY_YEARS'] = int(os.environ.get('CERTIFICATE_VALIDITY_YEARS', 3))
+
 
 
 db = SQLAlchemy(app)
